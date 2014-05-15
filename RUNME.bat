@@ -1,47 +1,40 @@
-@Echo off
-REM 
-REM This batch will create folder in DD-MM-YYYY format
-REM And move all ZIP files to it.
-REM developed by Georgiy Sitnikov for PD-31 Telekom Deutschland GMBH 2014
-REM 
-REM !!! Backup script will not works on network drives if they are not mapped
-REM as local drive. This means if you running script under following address
-REM \\debnlwnasc0103.de.ad.tmo\TDEV131\PD31\PD31-Jourfix\_active_ it will not works!!!
-REM
-
-	rem Going to Topics to create ZIP of included Folders
-cd Topics\
-
-	rem ZIPing files, each in own archive
-FOR %%i IN (*.*) DO "..\7z.exe" a "%%~ni.zip" "%%i"
-
-	rem Compressing Dirictories with subdirectories
-for /d %%X in (*) do "..\7z.exe" a "%%X.zip" "%%X\" -r
-
-	rem ZIPing current JF.ppt
-..\7z.exe a Current_PD31_JF.zip ..\Current_PD31_JF.ppt -ssw
-
-	rem Going two dirs up
-cd ..\..
-
-	rem Creating dir name
-Set CURRDATE=%TEMP%\CURRDATE.TMP
-DATE /T > %CURRDATE%
-TIME /T > %TIME%
-Set PARSEARG="eol=; tokens=1,2,3,4* delims=/. "
-For /F %PARSEARG% %%i in (%CURRDATE%) Do SET DDMMYYYY=%%k-%%j-%%i
-
-	rem Display output
-Echo New dir %DDMMYYYY% is created
-ECHO ======== Log from %DDMMYYYY% %TIME%========>> _active_\log.log
-
-	rem Creating and Changing to new dir
-mkdir %DDMMYYYY% >> _active_\log.log
-
-	rem Going to created folder
-cd %DDMMYYYY%
-
-	rem Move ALL files to new dir
-copy ..\_active_\Topics\*.zip . >> ..\_active_\log.log
-del ..\_active_\Topics\*.zip
-Echo OK!
+REM RUNME 2.3
+REM for NSN RuleSet 4.0
+REM Copyright by Georgiy Sitnikov
+@echo off
+cls
+REM Check if file exist
+if NOT EXIST %1 (
+echo Input file not found
+GOTO EOF)
+REM Start working
+set value=.clean
+echo STEP 1 - Converting CSV to XML
+echo  Input file name is: %1
+echo  Output file name is: %1.xml
+echo.
+echo  ===HINT: It works slowly on Network drives===
+echo.
+echo  WORKING...
+echo.
+REM Here start NSN conversion tool. In case new version change
+REM csv2rs_4.0.jar to actual file name. Check syntax if updated.
+java -classpath csv2rs_4.1.jar com.nsn.pcrf.Csv2Xml %1 %1.xml
+echo.
+echo  DONE!
+echo.
+echo STEP 2 - Cleanup
+echo  WORKING...
+echo 	1. Deleting all unnecessary spaces after comma
+REM Here start replacing script
+type %1.xml|repl ", " "," >%1.xml%value%.step1
+echo 	2. Replacing $ by ;
+type %1.xml%value%.step1|repl "$" ";" L >%1.xml%value%.step2
+echo  DONE!
+echo.
+echo  Cleanup
+del %1.xml
+del %1.xml%value%.step1
+ren %1.xml%value%.step2 %1.xml
+echo  Finished!
+:EOF
