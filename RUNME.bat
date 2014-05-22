@@ -2,7 +2,7 @@
 
 ::************ Documentation ***********
 
-::: RUNME 3.0
+::: RUNME 3.1
 ::: for NSN RuleSet 4.1+
 ::: Copyright by Georgiy Sitnikov
 
@@ -12,21 +12,21 @@ cls
 REM Check if file exist
 if NOT EXIST %1 (
 echo Input file not found
+echo  ===HINT: It does not work on not mapped Network drives===
 exit /b 1)
 REM Start working
-set value=.clean
 echo STEP 1 - Converting CSV to XML
 echo  Input file name is: %1
 echo  Output file name is: %1.xml
 echo.
-echo  ===HINT: It works slowly on Network drives===
+echo  ===HINT: It does not work on not mapped Network drives===
 echo.
 echo  WORKING...
 echo.
 echo Converting...
-REM Here start NSN conversion tool. In case new version change
+REM Here start NSN conversion tool. In case new version, change
 REM csv2rs_4.1.jar to actual file name. Check syntax if updated.
-java -classpath csv2rs_4.1.jar com.nsn.pcrf.Csv2Xml %1 %1.xml
+java -classpath csv2rs_4.1.jar com.nsn.pcrf.Csv2Xml %1 %tmp%\%1.xml
 echo.
 echo  DONE!
 echo.
@@ -34,15 +34,14 @@ echo STEP 2 - Cleanup
 echo  WORKING...
 echo 	1. Deleting all unnecessary spaces after comma
 REM Here start replacing script
-type %1.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%1.xml%value%.step1
+type %tmp%\%1.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%1.xml.step1
 echo 	2. Replacing $ by ;
-type %1.xml%value%.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%1.xml%value%.step2
+type %tmp%\%1.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%1.xml.step2
 echo  DONE!
 echo.
 echo  Cleanup temp files
-del %1.xml
-del %1.xml%value%.step1
-ren %1.xml%value%.step2 %1.xml
+move /Y "%tmp%\%1.xml.step2" "%~dp0%1.xml"
+del %tmp%\%1.xml*
 echo  Finished.
 exit /b 0
 
