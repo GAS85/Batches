@@ -2,44 +2,69 @@
 
 ::************ Documentation ***********
 
-::: RUNME 3.1
+::: RUNME 3.5
 ::: for NSN RuleSet 4.1+
 ::: Copyright by Georgiy Sitnikov
 
 ::************ Batch portion ***********
 @echo off
+	REM Here NSN conversion tool. In case new version, change
+	REM "csv2rs_4.1.jar" to actual file name. Check syntax if updated.
+set JAR=csv2RS_4.1.jar
+if NOT EXIST %JAR% (
+	echo.
+	echo !!! ERROR, convertion tool is not found !!!
+	echo Please copy %JAR% to current folder:
+	echo %~dp0
+	exit /b 1)
 cls
-REM Check if file exist
+	REM Check if file exist, if not will do operation for ALL CSVs in folder
+if "%1" == "" (
+	GOTO :CSVs
+	exit /b 0)
 if NOT EXIST %1 (
-echo Input file not found
-echo  ===HINT: It does not work on not mapped Network drives===
-exit /b 1)
-REM Start working
+	echo Input file not found
+	echo  ===HINT: It does not work on not mapped Network drives===
+	exit /b 1)
+GOTO :Normal
+
+	REM Work on all CSVs in folder
+:CSVs
+FOR %%i IN (*.csv) DO (
+	java -classpath %JAR% com.nsn.pcrf.Csv2Xml %%i %tmp%\%%~ni.xml
+	echo  WORKING...
+		REM Here start replacing script
+	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
+	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
+	move /Y "%tmp%\%%~ni.xml.step2" "%~dp0%%~ni.xml"
+	del %tmp%\%%~ni.xml*
+	echo  Finished for %%~ni
+	echo.)
+exit /b 0
+
+:Normal
+	REM Start working for exact file
 echo STEP 1 - Converting CSV to XML
 echo  Input file name is: %1
 echo  Output file name is: %1.xml
-echo.
 echo  ===HINT: It does not work on not mapped Network drives===
 echo.
-echo  WORKING...
-echo.
-echo Converting...
-REM Here start NSN conversion tool. In case new version, change
-REM csv2rs_4.1.jar to actual file name. Check syntax if updated.
-java -classpath csv2rs_4.1.jar com.nsn.pcrf.Csv2Xml %1 %tmp%\%1.xml
+echo  Converting...
+	REM CHECK SYNTAX HERE, IF UPDATED!!!
+java -classpath %JAR% com.nsn.pcrf.Csv2Xml %1 %tmp%\%1.xml
 echo.
 echo  DONE!
 echo.
 echo STEP 2 - Cleanup
 echo  WORKING...
 echo 	1. Deleting all unnecessary spaces after comma
-REM Here start replacing script
+	REM Here start replacing script
 type %tmp%\%1.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%1.xml.step1
 echo 	2. Replacing $ by ;
 type %tmp%\%1.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%1.xml.step2
 echo  DONE!
 echo.
-echo  Cleanup temp files
+echo  STEP 3 - Cleanup temp files
 move /Y "%tmp%\%1.xml.step2" "%~dp0%1.xml"
 del %tmp%\%1.xml*
 echo  Finished.
