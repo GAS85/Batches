@@ -2,7 +2,7 @@
 
 ::************ Documentation ***********
 
-::: RUNME 3.5
+::: RUNME 3.6
 ::: for NSN RuleSet 4.1+
 ::: Copyright by Georgiy Sitnikov
 
@@ -28,15 +28,15 @@ if NOT EXIST %1 (
 	exit /b 1)
 GOTO :Normal
 
-	REM Work on all CSVs in folder
+	REM Work on all CSVs in folder AND subfolders
 :CSVs
-FOR %%i IN (*.csv) DO (
-	java -classpath %JAR% com.nsn.pcrf.Csv2Xml %%i %tmp%\%%~ni.xml
+FOR /R %%i IN (*.csv) DO (
+	java -classpath %JAR% com.nsn.pcrf.Csv2Xml "%%i" %tmp%\%%~ni.xml
 	echo  WORKING...
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	move /Y "%tmp%\%%~ni.xml.step2" "%~dp0%%~ni.xml"
+	move /Y "%tmp%\%%~ni.xml.step2" "%%i.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
 	echo.)
