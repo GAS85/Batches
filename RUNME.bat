@@ -44,6 +44,14 @@
 	REM Here NSN conversion tool. In case new version, change
 	REM "csv2rs_4.1.jar" to actual file name. Check syntax if updated.
 set JAR=csv2RS_4.1.jar
+if "%1" == "/h" (
+	<"%~f0" cscript //E:JScript //nologo "%~f0" "^:::" "" a
+	exit /b 0)
+if "%1" == "/v" (
+	<"%~f0" cscript //E:JScript //nologo "%~f0" "^:::" "" a >%tmp%\help.file
+	set /p TEXT=< %tmp%\help.file
+	echo %TEXT%
+	exit /b 0)
 if NOT EXIST %JAR% (
 	echo.
 	echo !!! ERROR, convertion tool is not found !!!
@@ -55,16 +63,8 @@ cls
 if "%1" == "" (
 	GOTO :CSVs
 	exit /b 0)
-if "%1" == "/v" (
-	<"%~f0" cscript //E:JScript //nologo "%~f0" "^:::" "" a >%tmp%\help.file
-	set /p TEXT=< %tmp%\help.file
-	echo %TEXT%
-	exit /b 0)
 if "%1" == "/a" (
 	GOTO :Recurs
-	exit /b 0)
-if "%1" == "/h" (
-	<"%~f0" cscript //E:JScript //nologo "%~f0" "^:::" "" a
 	exit /b 0)
 if NOT EXIST %1 (
 	echo Input file not found
