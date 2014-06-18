@@ -2,9 +2,42 @@
 
 ::************ Documentation ***********
 
-::: RUNME 3.6
-::: for NSN RuleSet 4.1+
-::: Copyright by Georgiy Sitnikov
+:::  RUNME.bat Version 3.6
+:::  for NSN RuleSet 4.1+
+:::  Copyright by Georgiy Sitnikov
+:::  This file will convert csv to xml and delete all unnecessary
+:::  spaces, replease all $ to ;
+:::
+:::  RUNME.bat [Options or Input file]
+:::
+:::       /v - check version of the file
+:::       /h - this help
+:::       /a - work with current folder AND all subfolders
+:::          - if nothing is set, prohramm will check all csv files in
+:::            current folder and no subfolders
+:::  Input file - input file can always be set, in this case only
+:::            this file will be converted
+:::
+:::  About Java Portion:
+:::  Search  - By default, this is a case sensitive JScript (ECMA) regular
+:::            expression expressed as a string.
+:::
+:::            JScript regex syntax documentation is available at
+:::            http://msdn.microsoft.com/en-us/library/ae5bf541(v=vs.80).aspx
+:::
+:::  Replace - By default, this is the string to be used as a replacement for
+:::            each found search expression. Full support is provided for
+:::            substituion patterns available to the JScript replace method.
+:::
+:::            For example, $& represents the portion of the source that matched
+:::            the entire search pattern, $1 represents the first captured
+:::            submatch, $2 the second captured submatch, etc. A $ literal
+:::            can be escaped as $$.
+:::
+:::            An empty replacement string must be represented as "".
+:::
+:::            Replace substitution pattern syntax is fully documented at
+:::            http://msdn.microsoft.com/en-US/library/efy6s3e6(v=vs.80).aspx
 
 ::************ Batch portion ***********
 @echo off
@@ -22,6 +55,17 @@ cls
 if "%1" == "" (
 	GOTO :CSVs
 	exit /b 0)
+if "%1" == "/v" (
+	<"%~f0" cscript //E:JScript //nologo "%~f0" "^:::" "" a >%tmp%\help.file
+	set /p TEXT=< %tmp%\help.file
+	echo %TEXT%
+	exit /b 0)
+if "%1" == "/a" (
+	GOTO :Recurs
+	exit /b 0)
+if "%1" == "/h" (
+	<"%~f0" cscript //E:JScript //nologo "%~f0" "^:::" "" a
+	exit /b 0)
 if NOT EXIST %1 (
 	echo Input file not found
 	echo  ===HINT: It does not work on not mapped Network drives===
@@ -30,6 +74,19 @@ GOTO :Normal
 
 	REM Work on all CSVs in folder AND subfolders
 :CSVs
+FOR %%i IN (*.csv) DO (
+	java -classpath %JAR% com.nsn.pcrf.Csv2Xml %%i %tmp%\%%~ni.xml
+	echo  WORKING...
+		REM Here start replacing script
+	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
+	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
+	move /Y "%tmp%\%%~ni.xml.step2" "%~dp0%%~ni.xml"
+	del %tmp%\%%~ni.xml*
+	echo  Finished for %%~ni
+	echo.)
+exit /b 0
+
+:Recurs
 FOR /R %%i IN (*.csv) DO (
 	java -classpath %JAR% com.nsn.pcrf.Csv2Xml "%%i" %tmp%\%%~ni.xml
 	echo  WORKING...
