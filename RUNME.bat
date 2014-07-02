@@ -2,11 +2,11 @@
 
 ::************ Documentation ***********
 
-:::  RUNME.bat Version 3.6
+:::  RUNME.bat Version 3.7
 :::  for NSN RuleSet 4.1+
 :::  Copyright by Georgiy Sitnikov
 :::  This file will convert csv to xml and delete all unnecessary
-:::  spaces, replease all $ to ;
+:::  spaces, replease all $ to ;, delete all #.
 :::
 :::  RUNME.bat [Options or Input file]
 :::
@@ -80,7 +80,8 @@ FOR %%i IN (*.csv) DO (
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	move /Y "%tmp%\%%~ni.xml.step2" "%~dp0%%~ni.xml"
+	type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
+	move /Y "%tmp%\%%~ni.xml.step3" "%~dp0%%~ni.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
 	echo.)
@@ -93,7 +94,8 @@ FOR /R %%i IN (*.csv) DO (
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	move /Y "%tmp%\%%~ni.xml.step2" "%%i.xml"
+	type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
+	move /Y "%tmp%\%%~ni.xml.step3" "%~dp0%%~ni.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
 	echo.)
@@ -119,10 +121,12 @@ echo 	1. Deleting all unnecessary spaces after comma
 type %tmp%\%1.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%1.xml.step1
 echo 	2. Replacing $ by ;
 type %tmp%\%1.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%1.xml.step2
+echo	3. Deleting all #
+type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
 echo  DONE!
 echo.
 echo  STEP 3 - Cleanup temp files
-move /Y "%tmp%\%1.xml.step2" "%~dp0%1.xml"
+move /Y "%tmp%\%%~ni.xml.step3" "%~dp0%%~ni.xml"
 del %tmp%\%1.xml*
 echo  Finished.
 exit /b 0
