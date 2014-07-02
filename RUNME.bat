@@ -95,7 +95,7 @@ FOR /R %%i IN (*.csv) DO (
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
 	type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
-	move /Y "%tmp%\%%~ni.xml.step3" "%~dp0%%~ni.xml"
+	move /Y "%tmp%\%%~ni.xml.step3" "%%i.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
 	echo.)
@@ -122,11 +122,11 @@ type %tmp%\%1.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%1.xml.ste
 echo 	2. Replacing $ by ;
 type %tmp%\%1.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%1.xml.step2
 echo	3. Deleting all #
-type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
+type %tmp%\%1.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%1.xml.step3
 echo  DONE!
 echo.
 echo  STEP 3 - Cleanup temp files
-move /Y "%tmp%\%%~ni.xml.step3" "%~dp0%%~ni.xml"
+move /Y "%tmp%\%1.xml.step3" "%~dp0%1.xml"
 del %tmp%\%1.xml*
 echo  Finished.
 exit /b 0
