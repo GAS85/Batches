@@ -2,11 +2,11 @@
 
 ::************ Documentation ***********
 
-:::  RUNME.bat Version 3.7
+:::  RUNME.bat Version 3.8
 :::  for NSN RuleSet 4.1+
 :::  Copyright by Georgiy Sitnikov
 :::  This file will convert csv to xml and delete all unnecessary
-:::  spaces, replease all $ to ;, delete all #.
+:::  spaces, replease all $ to ;, check if # present.
 :::
 :::  RUNME.bat [Options or Input file]
 :::
@@ -80,8 +80,8 @@ FOR %%i IN (*.csv) DO (
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
-	move /Y "%tmp%\%%~ni.xml.step3" "%~dp0%%~ni.xml"
+	findstr /N # %tmp%\%1.xml.step2
+	move /Y "%tmp%\%%~ni.xml.step2" "%~dp0%%~ni.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
 	echo.)
@@ -94,8 +94,8 @@ FOR /R %%i IN (*.csv) DO (
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	type %tmp%\%%~ni.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%%~ni.xml.step3
-	move /Y "%tmp%\%%~ni.xml.step3" "%%i.xml"
+	findstr /N # %tmp%\%1.xml.step2
+	move /Y "%tmp%\%%~ni.xml.step2" "%%i.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
 	echo.)
@@ -121,12 +121,13 @@ echo 	1. Deleting all unnecessary spaces after comma
 type %tmp%\%1.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%1.xml.step1
 echo 	2. Replacing $ by ;
 type %tmp%\%1.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%1.xml.step2
-echo	3. Deleting all #
-type %tmp%\%1.xml.step2|cscript //E:JScript //nologo "%~f0" "#" "" L >%tmp%\%1.xml.step3
+echo 	3. Check for errors (Please check # as soon as some output present):
+findstr /N # %tmp%\%1.xml.step2
+echo.
 echo  DONE!
 echo.
 echo  STEP 3 - Cleanup temp files
-move /Y "%tmp%\%1.xml.step3" "%~dp0%1.xml"
+move /Y "%tmp%\%1.xml.step2" "%~dp0%1.xml"
 del %tmp%\%1.xml*
 echo  Finished.
 exit /b 0
