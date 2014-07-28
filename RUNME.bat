@@ -80,7 +80,9 @@ FOR %%i IN (*.csv) DO (
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	findstr /N # %tmp%\%1.xml.step2
+	echo  Error in lines:
+	findstr /N # %tmp%\%%~ni.xml.step2
+	echo.
 	move /Y "%tmp%\%%~ni.xml.step2" "%~dp0%%~ni.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
@@ -94,7 +96,9 @@ FOR /R %%i IN (*.csv) DO (
 		REM Here start replacing script
 	type %tmp%\%%~ni.xml|cscript //E:JScript //nologo "%~f0" ", " "," >%tmp%\%%~ni.xml.step1
 	type %tmp%\%%~ni.xml.step1|cscript //E:JScript //nologo "%~f0" "$" ";" L >%tmp%\%%~ni.xml.step2
-	findstr /N # %tmp%\%1.xml.step2
+	echo  Error in lines:
+	findstr /N # %tmp%\%%~ni.xml.step2
+	echo.
 	move /Y "%tmp%\%%~ni.xml.step2" "%%i.xml"
 	del %tmp%\%%~ni.xml*
 	echo  Finished for %%~ni
